@@ -3,73 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Каталог Библиотеки</title>
+    <title>Библиотека Факультета</title>
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .book-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            cursor: pointer;
-            border: none;
-            border-radius: 10px;
-        }
-        .book-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
-        }
-        .cover-img {
-            height: 320px;
-            object-fit: cover;
-            border-radius: 10px 10px 0 0;
-        }
-        .card-title {
-            font-size: 1.1rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        a { text-decoration: none; color: inherit; }
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+   <style>
+    .book-card {
+        transition: all 0.3s ease;
+        border: none;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+    }
+    .book-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .cover-img {
+        height: 350px;
+        object-fit: cover;
+        width: 100%;
+    }
+    /* Настройки для длинных названий */
+    .card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        color: #212529;
+
+        /* Позволяет тексту занимать до 2-х строк, потом обрезает */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+
+        /* Фиксированная высота, чтобы карточки были ровными */
+        height: 3rem;
+        line-height: 1.5rem;
+    }
+    .card-author {
+        font-size: 0.9rem;
+        color: #6c757d;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    a { text-decoration: none; }
     </style>
 </head>
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-5 shadow">
+<!-- Навигационная панель -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
     <div class="container">
-        <a class="navbar-brand" href="/">Факультетская Библиотека</a>
-        <div class="ms-auto">
-            <a href="/login_test" class="btn btn-sm btn-outline-light">Тест: Войти</a>
-            <a href="/logout_test" class="btn btn-sm btn-outline-danger">Выйти</a>
+        <a class="navbar-brand" href="/">БИБЛИОТЕКА ФАКУЛЬТЕТА</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                {% if session.get('user_id') %}
+                        <!-- ДОБАВЬТЕ ЭТОТ БЛОК -->
+                {% if session.get('user_role') == 'admin' %}
+                <li class="nav-item me-3">
+                <a class="btn btn-warning btn-sm" href="/admin">
+                    <i class="bi bi-shield-lock"></i> Админ-панель
+                </a>
+                </li>
+                {% endif %}
+        <!-- КОНЕЦ БЛОКА -->
+                    <li class="nav-item me-3">
+                        <span class="nav-link text-light">
+                            <i class="bi bi-person"></i> {{ session.get('user_name') }}
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-outline-danger btn-sm" href="/logout">Выйти</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Вход</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary btn-sm ms-lg-2" href="/register">Регистрация</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
     </div>
 </nav>
 
-<div class="container">
-    <h1 class="text-center mb-5">Каталог книг</h1>
+<div class="container mt-4">
+    <!-- Блок поиска и фильтрации -->
+    <div class="card card-body border-0 shadow-sm mb-5">
+        <form action="/" method="GET" class="row g-3">
+            <!-- Поиск по тексту -->
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Название или автор..." value="{{ request.args.get('search', '') }}">
+                </div>
+            </div>
 
+            <!-- Выпадающий список жанров -->
+            <div class="col-md-5">
+                <select name="genre" class="form-select">
+                    <option value="">Все жанры</option>
+                    {% for genre in genres %}
+                        <option value="{{ genre.genre_id }}" {% if request.args.get('genre') == genre.genre_id|string %}selected{% endif %}>
+                            {{ genre.genre_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Применить</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Каталог книг -->
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
         {% for book in books %}
         <div class="col">
             <a href="{{ url_for('books.book_detail', book_id=book.book_id) }}">
                 <div class="card h-100 book-card shadow-sm">
-                    <!-- Логика картинки -->
+                    <!-- Обложка -->
                     {% if book.cover_path %}
                         <img src="{{ url_for('static', filename='covers/' + book.cover_path) }}" class="card-img-top cover-img" alt="{{ book.title }}">
                     {% else %}
-                        <img src="{{ url_for('static', filename='covers/default.jpg') }}" class="card-img-top cover-img" alt="Обложка отсутствует">
+                        <img src="{{ url_for('static', filename='covers/default.jpg') }}" class="card-img-top cover-img" alt="Нет обложки">
                     {% endif %}
 
+                    <!-- Информация: Только Название и Автор -->
                     <div class="card-body text-center">
+                        <!-- Убрали text-truncate, теперь тут работает наш CSS с ограничением в 2 строки -->
                         <div class="card-title">{{ book.title }}</div>
-                        <div class="text-muted">{{ book.author }}</div>
+                        <div class="card-author">{{ book.author }}</div>
                     </div>
                 </div>
             </a>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <h4 class="text-muted">Книг не найдено</h4>
+            <a href="/" class="btn btn-link">Сбросить фильтры</a>
         </div>
         {% endfor %}
     </div>
 </div>
 
-<footer class="mt-5 py-4 text-center text-muted border-top bg-white">
-    © 2026 Онлайн-библиотека факультета
+<footer class="mt-5 py-4 text-center text-muted bg-white border-top">
+    <p>© 2026 Онлайн-библиотека факультета</p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

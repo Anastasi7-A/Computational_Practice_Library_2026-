@@ -5,7 +5,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = (
         f"mysql+pymysql://"
         f"{os.getenv('DB_USER', 'root')}:"
-        f"{os.getenv('DB_PASS', '')}@"
+        f"{os.getenv('DB_PASS', 'SQL12345')}@"
         f"{os.getenv('DB_HOST', 'localhost')}:"
         f"{os.getenv('DB_PORT', '3306')}/"
         f"{os.getenv('DB_NAME', 'Library')}"
