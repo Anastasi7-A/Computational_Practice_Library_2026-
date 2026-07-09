@@ -12,5 +12,7 @@ def create_app(config=DevelopmentConfig):
     with app.app_context():
         test_connection(app)
 
+    from app.routes.catalog_routes import catalog_bp
+    app.register_blueprint(catalog_bp)
 
     return app
