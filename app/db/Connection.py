@@ -8,6 +8,7 @@ def init_db(app):
     db.init_app(app)
 
     with app.app_context():
+        import app.models.users
 
         db.create_all()
 
