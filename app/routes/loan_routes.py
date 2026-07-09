@@ -7,6 +7,7 @@ from app.models.book import Book
 from app.models.users import User
 from app.models.loans import Loan
 from app.utils.auth import login_required
+from app.routes.reservation_routes import process_queue
 
 loan_bp = Blueprint('loans', __name__)
 
@@ -110,6 +111,8 @@ def return_book(loan_id):
     book = loan.book
     book.available_copies += 1
     db.session.commit()
+
+    process_queue(book.book_id)
 
     flash('Книга успешно возвращена, спасибо!')
     return redirect(url_for('loans.profile'))
