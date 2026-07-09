@@ -13,6 +13,7 @@ def init_db(app):
         import app.models.book  # noqa: F401
         import app.models.loans  # noqa: F401
         import app.models.reservation
+        import app.models.fines
 
         db.create_all()
 
