@@ -24,5 +24,9 @@ def create_app(config=DevelopmentConfig):
     from app.routes.reservation_routes import reservation_bp
     app.register_blueprint(reservation_bp)
 
+    from app.routes.admin_routes import admin_bp
+    app.register_blueprint(admin_bp)
+
+
 
     return app
