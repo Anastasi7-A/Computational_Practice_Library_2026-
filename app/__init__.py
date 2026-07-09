@@ -21,5 +21,8 @@ def create_app(config=DevelopmentConfig):
     from app.routes.loan_routes import loan_bp
     app.register_blueprint(loan_bp)
 
+    from app.routes.reservation_routes import reservation_bp
+    app.register_blueprint(reservation_bp)
+
 
     return app
