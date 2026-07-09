@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, session
 
 from app.models.book import Book
 from app.models.genres import Genre
+from app.models.loans import Loan
 
 catalog_bp = Blueprint('catalog', __name__)
 
@@ -37,12 +38,20 @@ def index():
 def book_detail(book_id):
     book = Book.query.get_or_404(book_id)
     is_authenticated = 'user_id' in session
+    my_loan = None
+
+    if is_authenticated:
+        my_loan = Loan.query.filter(
+            Loan.book_id == book_id,
+            Loan.user_id == session['user_id'],
+            Loan.status_loan.in_(['active', 'overdue'])
+        ).first()
 
     return render_template(
         'book_detail.html',
         book=book,
         is_authenticated=is_authenticated,
-        my_loan=None,
+        my_loan=my_loan,
         my_reservation=None,
         queue_position=None
     )
