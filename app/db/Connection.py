@@ -8,8 +8,10 @@ def init_db(app):
     db.init_app(app)
 
     with app.app_context():
-        import app.models.genres  # noqa: F401
-        import app.models.book  # noqa: F401
+
+	import app.models.users
+        import app.models.genres 
+        import app.models.book         
 
         db.create_all()
 
